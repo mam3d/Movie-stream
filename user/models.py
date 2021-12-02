@@ -38,3 +38,15 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
         if self.name:
             return self.name
         return self.phone
+
+
+class PhoneVerify(models.Model):
+    phone = models.CharField(max_length=11)
+    code = models.IntegerField()
+    count = models.IntegerField(default=1)
+
+    def __str__(self):
+        return self.phone
+
+    class Meta:
+        verbose_name_plural = "phone verifies"

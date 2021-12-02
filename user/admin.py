@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import (
+        CustomUser,
+        PhoneVerify,
+        )
 
 
 @admin.register(CustomUser)
@@ -16,3 +19,8 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
     
+
+@admin.register(PhoneVerify)
+class PhoneVerifyAdmin(admin.ModelAdmin):
+    list_display = ["phone","code","count"]
+
