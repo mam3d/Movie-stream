@@ -1,9 +1,12 @@
 from django.test import TestCase
-from user.api.serializers import PhoneVerifySerializer
+from user.api.serializers import (
+            PhoneVerifySerializer,
+            UserRegisterSerializer,
+            )
 from ..models import (
-        CustomUser,
-        PhoneVerify,
-        )
+            CustomUser,
+            PhoneVerify,
+            )
 
 
 class PhoneVerifySerializerTest(TestCase):
@@ -42,4 +45,42 @@ class PhoneVerifySerializerTest(TestCase):
             "phone":"09026673395"
         }
         serializer = PhoneVerifySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+
+
+class UserRegisterSerializerTest(TestCase):
+    def setUp(self):
+        PhoneVerify.objects.create(
+            phone = "09026673395",
+            code = 123456,
+            )
+
+    def test_is_valid(self):
+        data = {
+            "phone":"09026673395",
+            "password":"imtestingit",
+            "password2":"imtestingit",
+            "code":123456
+        }
+        serializer = UserRegisterSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_not_valid(self):
+        data = {
+            "phone":"09026673395",
+            "password":"imtestingit",
+            "password2":"124141441",
+            "code":12355,
+        }
+        serializer = UserRegisterSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+
+    def test_not_valid_wong_code(self):
+        data = {
+            "phone":"09026673395",
+            "password":"imtestingit",
+            "password2":"imtestingit",
+            "code":000000,
+        }
+        serializer = UserRegisterSerializer(data=data)
         self.assertFalse(serializer.is_valid())

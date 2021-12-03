@@ -34,3 +34,32 @@ class PhoneVerifyCreateTest(TestCase):
         phone = PhoneVerify.objects.get(phone="09036673395")
         self.assertEqual(phone.count,2)
         self.assertEqual(response.status_code,201)
+
+
+class UserRegisterViewTest(TestCase):
+    def setUp(self):
+        self.url = reverse("register")
+        self.phone = PhoneVerify.objects.create(
+                        phone = "09026673395",
+                        code = 123456,
+                        )
+
+    def test_create(self):
+        data = {
+            "phone":"09026673395",
+            "password":"imtestingit",
+            "password2":"imtestingit",
+            "code":123456.
+        }
+        response = self.client.post(self.url,data=data)
+        self.assertEqual(response.status_code,201)
+
+    def test_not_create(self):
+        data = {
+            "phone":"09026asfa673395",
+            "password":"imtestingit",
+            "password2":"oafasflkafsf",
+            "code":00000,
+        }
+        response = self.client.post(self.url,data=data)
+        self.assertEqual(response.status_code,400)

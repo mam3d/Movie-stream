@@ -2,7 +2,10 @@ import random
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import PhoneVerifySerializer
+from .serializers import (
+            PhoneVerifySerializer,
+            UserRegisterSerializer,
+            )
 from ..models import PhoneVerify
 from ..helpers import send_smscode
 
@@ -29,3 +32,11 @@ class PhoneVerifyCreate(generics.CreateAPIView):
         else:      
             serializer.save(code=code)
             # send_smscode(code,phone)
+
+class UserRegisterView(generics.CreateAPIView):
+    serializer_class = UserRegisterSerializer
+
+    def create(self,request,*args, **kwargs):
+        super().create(request,*args, **kwargs)
+        return Response({"success":"user has been created"},status=status.HTTP_201_CREATED)
+

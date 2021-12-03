@@ -3,7 +3,10 @@ from ..models import (
         PhoneVerify,
         CustomUser,
         )
-from ..validators import phone_validator
+from ..validators import (
+        phone_validator,
+        check_user_not_exists,
+        )
 
 
 
@@ -11,21 +14,54 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
     class Meta:
         model = PhoneVerify
         fields = ["phone"]
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["phone"].validators.extend([phone_validator,check_user_not_exists])
     
     def validate_phone(self,value):
-        phone = phone_validator(value)
-        user = CustomUser.objects.filter(phone=phone)
-        if user:
-            raise serializers.ValidationError("user with this phone number exists")
-            
-        phone_queryset = PhoneVerify.objects.filter(phone=phone)
+        phone_queryset = PhoneVerify.objects.filter(phone=value)
         if phone_queryset.exists():
             phone_verify = phone_queryset.first()
             if phone_verify.count >= 8:
                 raise serializers.ValidationError("you cant request code anymore")
-            return phone
-        return phone
+            return value
+        return value
 
         
+class UserRegisterSerializer(serializers.ModelSerializer):
+    code = serializers.IntegerField()
+    password2 = serializers.CharField()
+    class Meta:
+        model = CustomUser
+        fields = ["phone","password","password2","code"]
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["phone"].validators.extend([phone_validator,check_user_not_exists])
+
+    def validate_phone(self,value):
+        phone_queryset = PhoneVerify.objects.filter(phone=value)
+        if not phone_queryset:
+            raise serializers.ValidationError("you must verify your phone first")
+        return value
+
         
-        
+    def validate(self,data):
+        phone = data.get("phone")
+        password = data.get("password")
+        password2 = data.get("password2")
+        code = data.get("code")
+        phone_verify = PhoneVerify.objects.get(phone=phone)
+        if password != password2:
+            raise serializers.ValidationError("passwords didnt match!")
+        elif code != phone_verify.code:
+            raise serializers.ValidationError("wrong code")
+        return data
+
+    def save(self):
+        user = CustomUser.objects.create_user(
+            phone = self.validated_data["phone"],
+            password = self.validated_data["password"]
+        )
+        return user

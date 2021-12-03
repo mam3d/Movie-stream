@@ -4,7 +4,6 @@ from django.contrib.auth.models import (
                     BaseUserManager,
                     PermissionsMixin
                     )
-from django.core.exceptions import ValidationError
 from .validators import phone_validator
 
 
@@ -44,6 +43,7 @@ class PhoneVerify(models.Model):
     phone = models.CharField(max_length=11)
     code = models.IntegerField()
     count = models.IntegerField(default=1)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.phone
