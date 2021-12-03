@@ -2,6 +2,7 @@ from django.test import TestCase
 from user.api.serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
+            LoginSerializer,
             )
 from ..models import (
             CustomUser,
@@ -25,7 +26,7 @@ class PhoneVerifySerializerTest(TestCase):
         self.assertFalse(serializer.is_valid())
 
     def test_not_valid_user_exists(self):
-        user = CustomUser.objects.create_user(
+        CustomUser.objects.create_user(
             phone = "09026673395",
             password = "imtestingit"
             )
@@ -75,12 +76,36 @@ class UserRegisterSerializerTest(TestCase):
         serializer = UserRegisterSerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
-    def test_not_valid_wong_code(self):
+    def test_not_valid2(self):
         data = {
             "phone":"09026673395",
             "password":"imtestingit",
             "password2":"imtestingit",
-            "code":000000,
+            "code":000000, # wrong code
         }
         serializer = UserRegisterSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+
+
+class LoginSerializerTest(TestCase):
+    def setUp(self):
+        CustomUser.objects.create_user(
+                phone = "09026673395",
+                password = "imtestingit"
+                )
+
+    def test_is_valid(self):
+        data = {
+            "phone":"09026673395",
+            "password":"imtestingit",
+        }
+        serializer = LoginSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_not_valid(self):
+        data = {
+            "phone":"09010000000", #wrong phone
+            "password":"imtestingit",
+        }
+        serializer = LoginSerializer(data=data)
         self.assertFalse(serializer.is_valid())

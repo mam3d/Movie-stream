@@ -1,12 +1,13 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from ..models import (
         PhoneVerify,
         CustomUser,
         )
 from ..validators import (
-        phone_validator,
-        check_user_not_exists,
-        )
+    phone_validator,
+    check_user_not_exists,
+    )
 
 
 
@@ -38,7 +39,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["phone"].validators.extend([phone_validator,check_user_not_exists])
+        self.fields["phone"].validators.extend([phone_validator])
 
     def validate_phone(self,value):
         phone_queryset = PhoneVerify.objects.filter(phone=value)
@@ -64,4 +65,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             phone = self.validated_data["phone"],
             password = self.validated_data["password"]
         )
+        phone = PhoneVerify.objects.get(phone=self.validated_data["phone"])
+        phone.delete()
+        return user
+
+
+class LoginSerializer(serializers.Serializer):
+    phone = serializers.CharField(validators=[phone_validator])
+    password = serializers.CharField()
+
+    def validate(self,data):
+        phone = data.get("phone")
+        password = data.get("password")
+        user = authenticate(username=phone,password=password)
+        if user is None:
+            raise serializers.ValidationError("phone number or password is inccorect")
         return user

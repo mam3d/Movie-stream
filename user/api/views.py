@@ -1,15 +1,16 @@
 import random
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
+            LoginSerializer,
             )
 from ..models import PhoneVerify
 from ..helpers import send_smscode
-
-
 
 
 class PhoneVerifyCreate(generics.CreateAPIView):
@@ -33,10 +34,32 @@ class PhoneVerifyCreate(generics.CreateAPIView):
             serializer.save(code=code)
             # send_smscode(code,phone)
 
-class UserRegisterView(generics.CreateAPIView):
-    serializer_class = UserRegisterSerializer
+class RegisterView(generics.CreateAPIView):
+    def create(self, request, *args, **kwargs):
+        serializer = UserRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+            "refresh":str(refresh),
+            "access":str(refresh.access_token)
+            },
+        status = status.HTTP_201_CREATED
+        )
+        
 
-    def create(self,request,*args, **kwargs):
-        super().create(request,*args, **kwargs)
-        return Response({"success":"user has been created"},status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        user = serializer.save()
+        return user
 
+
+class LoginView(APIView):
+    def post(self,request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        refresh = RefreshToken.for_user(serializer.validated_data)
+        return Response({
+            "refresh":str(refresh),
+            "access":str(refresh.access_token)
+        })
