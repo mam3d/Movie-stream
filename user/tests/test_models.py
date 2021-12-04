@@ -2,15 +2,19 @@ from django.test import TestCase
 from ..models import (
             CustomUser,
             PhoneVerify,
+            Subscription,
+            UserSubscription
             )
 
 
 class CustomUserTest(TestCase):
     def setUp(self):
+        Subscription.objects.create(name="F",price=0)
         self.user = CustomUser.objects.create_user(
             phone = "09026673395",
             password = "imtestingit",
             )
+        
 
     def test_user_created(self):
         self.assertEqual(self.user.phone,"09026673395")
@@ -36,4 +40,21 @@ class PhoneVerifyTest(TestCase):
         self.assertEqual(self.phone_verify.code,12345)
         self.assertEqual(self.phone_verify.count,1)
         self.assertEqual(str(self.phone_verify),"09026673395")
+
+class SubscriptionTest(TestCase):
+    def setUp(self):
+        self.subscription = Subscription.objects.create(
+            name = "P",
+            price = 30,
+            )
+
+    def test_subscription_created(self):
+        self.assertEqual(self.subscription.name,"P")
+        self.assertEqual(self.subscription.price,30)
+        self.assertEqual(str(self.subscription),"pro")
+
+
+
+
+
 

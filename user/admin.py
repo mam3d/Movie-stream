@@ -3,6 +3,8 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
         CustomUser,
         PhoneVerify,
+        Subscription,
+        UserSubscription,
         )
 
 
@@ -18,9 +20,26 @@ class CustomUserAdmin(UserAdmin):
             ),
         }),
     )
-    
+    add_fieldsets = (
+        (None, {
+            "fields": (
+                "phone","name","password","is_staff","is_admin"
+            ),
+        }),
+    )
 
 @admin.register(PhoneVerify)
 class PhoneVerifyAdmin(admin.ModelAdmin):
     list_display = ["phone","code","count"]
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ["name","price"]
+
+@admin.register(UserSubscription)
+class UserSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ["user","subscription"]
+
+
 

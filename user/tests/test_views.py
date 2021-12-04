@@ -1,6 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
-from ..models import PhoneVerify
+from ..models import (
+        PhoneVerify,
+        Subscription,
+        )
 
 
 class PhoneVerifyCreateTest(TestCase):
@@ -38,6 +41,7 @@ class PhoneVerifyCreateTest(TestCase):
 
 class UserRegisterViewTest(TestCase):
     def setUp(self):
+        Subscription.objects.create(name="F",price=0)
         self.url = reverse("register")
         self.phone = PhoneVerify.objects.create(
                         phone = "09026673395",
