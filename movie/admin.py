@@ -12,9 +12,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    list_filter = ["category"]
+    list_filter = ["categories"]
     prepopulated_fields = ({"slug":("name",)})
-    raw_id_fields = ["category","actor"]
+    raw_id_fields = ["categories","actors"]
 
 admin.site.register(Actor)
 

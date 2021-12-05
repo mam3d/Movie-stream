@@ -30,10 +30,10 @@ class MovieTest(TestCase):
             name = "chucky",
             image = "media/chucky.png",
             )
-        self.movie.category.add(category,category2)
-        self.movie.actor.add(actor)
-        self.category_count = self.movie.category.count()
-        self.actor_count = self.movie.actor.count()
+        self.movie.categories.add(category,category2)
+        self.movie.actors.add(actor)
+        self.category_count = self.movie.categories.count()
+        self.actor_count = self.movie.actors.count()
 
     def test_movie_created(self):
         self.assertEqual(self.movie.name,"chucky")

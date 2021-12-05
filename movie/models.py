@@ -24,8 +24,8 @@ class Movie(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="movie/")
-    actor = models.ManyToManyField(Actor,related_name="actors")
-    category = models.ManyToManyField(Category,related_name="movies")
+    actors = models.ManyToManyField(Actor,related_name="actors")
+    categories = models.ManyToManyField(Category,related_name="movies")
     slug = models.SlugField()
 
     def __str__(self):
