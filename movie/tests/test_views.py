@@ -19,3 +19,11 @@ class CategoryDetailTest(TestCase):
         url = reverse("category_detail",kwargs={"slug":"wrong"})
         response = self.client.get(url)
         self.assertEqual(response.status_code,404)
+
+class MovieListTest(TestCase):
+    def setUp(self):
+        self.url = reverse("movies")
+
+    def test_retrieve(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code,200)
