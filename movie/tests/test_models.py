@@ -2,6 +2,7 @@ from django.test import TestCase
 from ..models import (
         Category,
         Movie,
+        Actor
         )
 
 
@@ -24,15 +25,28 @@ class MovieTest(TestCase):
         category2 = Category.objects.create(
             name = "Comedy"
         )
-        self.movie = Movie(
+        actor = Actor.objects.create(name="test actor")
+        self.movie = Movie.objects.create(
             name = "chucky",
             image = "media/chucky.png",
             )
-        self.movie.save()
         self.movie.category.add(category,category2)
-    
+        self.movie.actor.add(actor)
+        self.category_count = self.movie.category.count()
+        self.actor_count = self.movie.actor.count()
+
     def test_movie_created(self):
         self.assertEqual(self.movie.name,"chucky")
         self.assertEqual(self.movie.slug,"chucky")
-        self.assertEqual(self.movie.categories,"Horror Comedy ")
+        self.assertEqual(self.category_count,2)
+        self.assertEqual(self.actor_count,1)
+        self.assertEqual(self.movie.image,"media/chucky.png")
         self.assertEqual(str(self.movie),"chucky")
+
+class ActorTest(TestCase):
+    def setUp(self):
+        self.actor = Actor.objects.create(name="test actor")
+    
+    def test_actor_created(self):
+        self.assertEqual(self.actor.name,"test actor")
+        self.assertEqual(str(self.actor),"test actor")

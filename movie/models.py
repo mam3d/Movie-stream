@@ -15,24 +15,24 @@ class Category(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+class Actor(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 class Movie(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="movie/")
-    category = models.ManyToManyField(Category)
+    actor = models.ManyToManyField(Actor,related_name="actors")
+    category = models.ManyToManyField(Category,related_name="movies")
     slug = models.SlugField()
 
     def __str__(self):
         return self.name
 
-    @property
-    def categories(self):
-        name = ""
-        for category in self.category.all():
-            name += f"{category.name} "
-        return name
-
     def save(self,*args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
