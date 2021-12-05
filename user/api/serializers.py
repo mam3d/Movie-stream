@@ -81,3 +81,13 @@ class LoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError("phone number or password is inccorect")
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    subscription = serializers.SerializerMethodField()
+    class Meta:
+        model = CustomUser
+        fields = ["phone","name","subscription"]
+
+    def get_subscription(self,obj):
+        return obj.user_subscription.subscription.get_name_display()

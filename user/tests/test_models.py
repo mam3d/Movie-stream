@@ -3,7 +3,6 @@ from ..models import (
             CustomUser,
             PhoneVerify,
             Subscription,
-            UserSubscription
             )
 
 

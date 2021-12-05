@@ -1,6 +1,7 @@
 import random
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -8,8 +9,9 @@ from .serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
             LoginSerializer,
+            UserProfileSerializer,
             )
-from ..models import PhoneVerify
+from ..models import CustomUser, PhoneVerify
 from ..helpers import send_smscode
 
 
@@ -63,3 +65,12 @@ class LoginView(APIView):
             "refresh":str(refresh),
             "access":str(refresh.access_token)
         })
+
+class ProfileView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    lookup_field = None
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        print(self.request.user)
+        return CustomUser.objects.get(phone=self.request.user)

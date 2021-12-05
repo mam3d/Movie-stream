@@ -1,8 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import (
         PhoneVerify,
         Subscription,
+        CustomUser
         )
 
 
@@ -67,3 +69,5 @@ class UserRegisterViewTest(TestCase):
         }
         response = self.client.post(self.url,data=data)
         self.assertEqual(response.status_code,400)
+
+
