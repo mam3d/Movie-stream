@@ -66,7 +66,7 @@ class Subscription(models.Model):
 
 class UserSubscription(models.Model):
     user = models.OneToOneField(CustomUser,on_delete=models.CASCADE,related_name="user_subscription")
-    subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE)
+    subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE,related_name="subscription")
 
 
     def __str__(self):
