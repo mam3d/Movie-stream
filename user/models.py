@@ -59,10 +59,11 @@ class Subscription(models.Model):
         ("P","pro")
     )
     name = models.CharField(max_length=1,choices=choice)
+    month = models.PositiveIntegerField(blank=True,null=True)
     price = models.IntegerField()
 
     def __str__(self):
-        return self.get_name_display()
+        return f"{self.get_name_display()}-{self.month}"
 
 
 class UserSubscription(models.Model):
@@ -80,7 +81,7 @@ class UserSubscription(models.Model):
             self.date_joined = None
 
         if self.date_joined:
-            self.date_expires = self.date_joined + timedelta(days=30)
+            self.date_expires = self.date_joined + timedelta(days=30 * self.subscription.month)
         super().save(*args, **kwargs)
         
 
