@@ -12,9 +12,6 @@ from ..models import (
 
 
 class PhoneVerifySerializerTest(TestCase):
-    def setUp(self):
-        Subscription.objects.create(name="F",price=0)
-
     def test_is_valid(self):
         data = {
             "phone":"09036673395"
@@ -93,7 +90,6 @@ class UserRegisterSerializerTest(TestCase):
 
 class LoginSerializerTest(TestCase):
     def setUp(self):
-        Subscription.objects.create(name="F",price=0)
         CustomUser.objects.create_user(
                 phone = "09026673395",
                 password = "imtestingit"

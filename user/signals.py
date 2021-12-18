@@ -9,5 +9,5 @@ from .models import (
 @receiver(post_save,sender=CustomUser)
 def create_user_subscription(sender,instance,created,**kwargs):
     if created:
-        subscription = Subscription.objects.get(name="F")
+        subscription,created = Subscription.objects.get_or_create(name="F",price=0)
         UserSubscription.objects.create(user=instance,subscription=subscription)

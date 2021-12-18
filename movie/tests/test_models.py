@@ -61,7 +61,6 @@ class ActorTest(TestCase):
 
 class RatingTest(TestCase):
     def setUp(self):
-        Subscription.objects.create(name="F",price=0)
         user = CustomUser.objects.create_user(
             phone = "09026673395",
             password = "imtestingit",

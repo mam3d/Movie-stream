@@ -43,7 +43,6 @@ class PhoneVerifyCreateTest(TestCase):
 
 class UserRegisterViewTest(TestCase):
     def setUp(self):
-        Subscription.objects.create(name="F",price=0)
         self.url = reverse("register")
         self.phone = PhoneVerify.objects.create(
                         phone = "09026673395",

@@ -43,10 +43,13 @@ class Movie(models.Model):
     @property
     def rating(self):
         ratings = self.ratings.all()
-        total = 0
-        for rate in ratings:
-            total += rate.number
-        return total / ratings.count()
+        if ratings:
+            total = 0
+            for rate in ratings:
+                total += rate.number
+            return total / ratings.count()
+        else:
+            return 0
 
 
     def save(self,*args, **kwargs):
