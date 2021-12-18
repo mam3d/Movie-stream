@@ -4,11 +4,13 @@ from user.api.permissions import SubscriptionPermission
 from .serializers import (
         CategorySerializer,
         MovieListSerializer,
-        MovieDetailSerializer
+        MovieDetailSerializer,
+        RatingSerializer
         )
 from ..models import (
         Category,
-        Movie
+        Movie,
+        Rating
         )
 
 
@@ -27,4 +29,13 @@ class MovieDetail(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated,SubscriptionPermission]
     queryset = Movie.objects.all()
     serializer_class = MovieDetailSerializer
-    lookup_field = "slug"   
+    lookup_field = "slug"
+
+
+class RatingCreate(generics.CreateAPIView):
+    serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticated,SubscriptionPermission]
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        return super().perform_create(serializer)   

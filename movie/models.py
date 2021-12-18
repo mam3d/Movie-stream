@@ -60,5 +60,9 @@ class Rating(models.Model):
     number = models.IntegerField(validators=[MinValueValidator(0),MaxValueValidator(10)])
     movie = models.ForeignKey(Movie,on_delete=models.CASCADE,related_name="ratings")
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'movie'],name="movie-user")
+            ]
     def __str__(self):
         return f"{self.user}'s rate"

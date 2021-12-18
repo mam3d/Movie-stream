@@ -1,0 +1,42 @@
+
+version: '3.7'
+
+services:
+  web:
+    build:
+      context: .
+      network: host
+      dockerfile: Dockerfile
+    container_name: web
+    image: web:lastest
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - app
+    volumes:
+      - .:/django 
+      
+    depends_on:
+      - db
+    
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=movie
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    networks:
+      - app
+
+networks:
+  app:
+
+volumes:
+  postgres_db:
