@@ -85,9 +85,13 @@ class LoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     subscription = serializers.SerializerMethodField()
+    date_expires = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ["phone","name","subscription"]
+        fields = ["phone","name","subscription","date_expires"]
 
     def get_subscription(self,obj):
         return obj.user_subscription.subscription.get_name_display()
+
+    def get_date_expires(self,obj):
+        return obj.user_subscription.date_expires
