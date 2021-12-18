@@ -72,5 +72,4 @@ class ProfileView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
 
     def get_object(self):
-        print(self.request.user)
         return CustomUser.objects.get(phone=self.request.user)

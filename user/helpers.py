@@ -1,8 +1,8 @@
-import os
+from decouple import config
 import requests
 
 def send_smscode(code,phone):
-    apikey = os.environ.get("apikey")
+    apikey = config("apikey")
     header = {
         'apikey': apikey,
     }

@@ -1,4 +1,5 @@
-
+from datetime import timedelta
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import (
                     AbstractBaseUser,
@@ -27,8 +28,8 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser,PermissionsMixin):
-    phone = models.CharField(unique=True,max_length=11,validators=[phone_validator])
-    name = models.CharField(max_length=100,blank=True)
+    phone = models.CharField(unique=True, max_length=11, validators=[phone_validator])
+    name = models.CharField(max_length=100, blank=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     USERNAME_FIELD = "phone"
@@ -66,12 +67,21 @@ class Subscription(models.Model):
 
 class UserSubscription(models.Model):
     user = models.OneToOneField(CustomUser,on_delete=models.CASCADE,related_name="user_subscription")
-    subscription = models.ForeignKey(Subscription,on_delete=models.CASCADE,related_name="subscription")
+    date_joined = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    date_expires = models.DateTimeField(blank=True,null=True)
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name="subscription")
 
 
     def __str__(self):
         return str(self.user)
 
+    def save(self,*args, **kwargs):
+        if self.subscription.name == "F":
+            self.date_joined = None
+
+        if self.date_joined:
+            self.date_expires = self.date_joined + timedelta(days=30)
+        super().save(*args, **kwargs)
         
 
 

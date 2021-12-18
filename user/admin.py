@@ -36,10 +36,11 @@ class PhoneVerifyAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ["name","price"]
+    
 
 @admin.register(UserSubscription)
 class UserSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ["user","subscription"]
+    list_display = ["user","subscription","date_joined","date_expires"]
 
 
 
