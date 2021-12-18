@@ -1,17 +1,24 @@
 import random
-from rest_framework import generics
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework import (
+        generics,
+        status,
+        permissions,
+        views,
+        response
+        )
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
             LoginSerializer,
             UserProfileSerializer,
+            SubscriptionSerializer
             )
-from ..models import CustomUser, PhoneVerify
+from ..models import (
+    CustomUser,
+    PhoneVerify,
+    Subscription,
+    )
 from ..helpers import send_smscode
 
 
@@ -20,7 +27,7 @@ class PhoneVerifyCreate(generics.CreateAPIView):
 
     def create(self,request,*args, **kwargs):
         super().create(request,*args, **kwargs)
-        return Response({"success":"code has been sent to your phone"},status=status.HTTP_201_CREATED)
+        return response.Response({"success":"code has been sent to your phone"},status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         phone = serializer.validated_data.get("phone")
@@ -42,7 +49,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
         refresh = RefreshToken.for_user(user)
-        return Response(
+        return response.Response(
             {
             "refresh":str(refresh),
             "access":str(refresh.access_token)
@@ -56,20 +63,25 @@ class RegisterView(generics.CreateAPIView):
         return user
 
 
-class LoginView(APIView):
+class LoginView(views.APIView):
     def post(self,request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         refresh = RefreshToken.for_user(serializer.validated_data)
-        return Response({
+        return response.Response({
             "refresh":str(refresh),
             "access":str(refresh.access_token)
         })
 
 class ProfileView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = None
     serializer_class = UserProfileSerializer
 
     def get_object(self):
         return CustomUser.objects.get(phone=self.request.user)
+
+
+class SubscriptionView(generics.ListAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()

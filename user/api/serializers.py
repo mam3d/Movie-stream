@@ -3,6 +3,7 @@ from rest_framework import serializers
 from ..models import (
         PhoneVerify,
         CustomUser,
+        Subscription
         )
 from ..validators import (
     phone_validator,
@@ -95,3 +96,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_date_expires(self,obj):
         return obj.user_subscription.date_expires
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    class Meta:
+        model = Subscription
+        fields = ["id","name","month","price"]
+    
+    def get_name(self,obj):
+        return obj.get_name_display()
