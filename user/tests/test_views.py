@@ -3,8 +3,8 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import (
         PhoneVerify,
-        Subscription,
-        CustomUser
+        CustomUser,
+        Subscription
         )
 
 
@@ -69,4 +69,35 @@ class UserRegisterViewTest(TestCase):
         response = self.client.post(self.url,data=data)
         self.assertEqual(response.status_code,400)
 
+class ProfileViewTest(TestCase):
+    def setUp(self):
+        self.url = reverse("profile")
+        user = CustomUser.objects.create_user(
+                        phone = "09026673395",
+                        password = "testing321",
+                        )
+        self.refresh = RefreshToken.for_user(user)
+
+    def test_authenticated(self):
+        response = self.client.get(self.url,HTTP_AUTHORIZATION=f"Bearer {self.refresh.access_token}")
+        self.assertEqual(response.status_code,200)
+
+    def test_unauthenticated(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code,401)
+
+
+class SubscriptionViewTest(TestCase):
+    def setUp(self):
+        self.url = reverse("subscriptions")
+        self.subscription = Subscription.objects.create(
+                name = "P",
+                price = 50,
+                month = 1,
+                )
+
+    def test_view(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json()[0]["name"],"pro")
 

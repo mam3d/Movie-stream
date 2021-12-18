@@ -44,12 +44,14 @@ class SubscriptionTest(TestCase):
         self.subscription = Subscription.objects.create(
             name = "P",
             price = 30,
+            month = 1
             )
 
     def test_subscription_created(self):
         self.assertEqual(self.subscription.name,"P")
         self.assertEqual(self.subscription.price,30)
-        self.assertEqual(str(self.subscription),"pro")
+        self.assertEqual(self.subscription.month,1)
+        self.assertEqual(str(self.subscription),"pro-1")
 
 
 
