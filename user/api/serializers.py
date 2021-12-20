@@ -1,9 +1,11 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
 from ..models import (
         PhoneVerify,
         CustomUser,
-        Subscription
+        Subscription,
+        UserSubscription
         )
 from ..validators import (
     phone_validator,
@@ -98,7 +100,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return obj.user_subscription.date_expires
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
+class SubscriptionViewSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     class Meta:
         model = Subscription
@@ -106,3 +108,33 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     
     def get_name(self,obj):
         return obj.get_name_display()
+
+
+class SubscriptionOrderSerializer(serializers.ModelSerializer):
+    subscription_id = serializers.IntegerField()
+
+    class Meta:
+        model = UserSubscription
+        fields = ["subscription_id","user"]
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["user"].default = CurrentUserDefault()
+        self.fields["user"].required = False
+
+    def validate_subscription_id(self,value):
+        subscription_queryset = Subscription.objects.filter(id=value)
+        if not subscription_queryset:
+            raise serializers.ValidationError("this subscription dose not exist")
+        elif subscription_queryset[0].name == "F":
+            raise serializers.ValidationError("you cant buy free subscription")
+        return value
+
+    def validate_user(self,value):
+        if value.user_subscription.subscription.name == "P":
+            raise serializers.ValidationError("you should wait your current subscription  has not ended yet")
+        return value
+        
+            
+
+

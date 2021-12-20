@@ -5,6 +5,7 @@ from .models import (
         PhoneVerify,
         Subscription,
         UserSubscription,
+        UserOrder
         )
 
 
@@ -43,5 +44,5 @@ class UserSubscriptionAdmin(admin.ModelAdmin):
     list_display = ["user","subscription","date_joined","date_expires"]
     fields = ["user","subscription"]
 
-
+admin.site.register(UserOrder)
 

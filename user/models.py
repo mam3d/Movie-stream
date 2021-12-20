@@ -83,6 +83,21 @@ class UserSubscription(models.Model):
         if self.date_joined:
             self.date_expires = self.date_joined + timedelta(days=30 * self.subscription.month)
         super().save(*args, **kwargs)
-        
+               
+
+class UserOrder(models.Model):
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    order = models.ForeignKey(Subscription,on_delete=models.CASCADE)
+    track_id = models.IntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s order"
 
 
+class DoublePay(models.Model):
+    user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
+    idpay_id = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.user

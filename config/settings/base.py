@@ -130,3 +130,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES":["rest_framework_simplejwt.authentication.JWTAuthentication"]
 }
+
+#celery configs
+broker_url = "redis://redis:6379"
+result_backend = "redis://redis:6379"
+task_serializer = "json"
+accept_content = ["json"]
+result_accept_content = ["json"]

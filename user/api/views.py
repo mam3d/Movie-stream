@@ -1,33 +1,46 @@
 import random
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from rest_framework import (
         generics,
         status,
         permissions,
         views,
-        response
+        response,
+        authentication
         )
+from user.tasks import subscription_expire
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
             LoginSerializer,
             UserProfileSerializer,
-            SubscriptionSerializer
+            SubscriptionViewSerializer,
+            SubscriptionOrderSerializer
             )
 from ..models import (
     CustomUser,
     PhoneVerify,
     Subscription,
+    UserSubscription,
+    UserOrder,
+    DoublePay
     )
-from ..helpers import send_smscode
-
+from ..helpers import (
+    send_smscode,
+    pay_with_idpay
+    )
 
 class PhoneVerifyCreate(generics.CreateAPIView):
     serializer_class = PhoneVerifySerializer
 
     def create(self,request,*args, **kwargs):
         super().create(request,*args, **kwargs)
-        return response.Response({"success":"code has been sent to your phone"},status=status.HTTP_201_CREATED)
+        return response.Response(
+            {"success":"code has been sent to your phone"},
+            status=status.HTTP_201_CREATED
+            )
 
     def perform_create(self, serializer):
         phone = serializer.validated_data.get("phone")
@@ -83,5 +96,50 @@ class ProfileView(generics.RetrieveAPIView):
 
 
 class SubscriptionView(generics.ListAPIView):
-    serializer_class = SubscriptionSerializer
+    serializer_class = SubscriptionViewSerializer
     queryset = Subscription.objects.all()
+
+
+class SubscriptionOrderView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.BasicAuthentication]
+
+    def post(self, request):
+        serializer = SubscriptionOrderSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            subscription_id = serializer.validated_data["subscription_id"]
+            user = serializer.validated_data["user"]
+            result = pay_with_idpay(subscription_id, user)
+
+            double_pay = DoublePay.objects.create(user=request.user, idpay_id=result["id"])
+
+            return response.Response(result["link"])
+        return response.Response(serializer.errors)
+
+    def get(self,request):
+        double_pay = get_object_or_404(DoublePay, user=request.user)
+        idpay_id = request.GET["id"]
+
+        if int(request.GET["status"]) == 10 and double_pay.idpay_id == idpay_id:
+
+            order_id = request.GET["order_id"]
+            subscription = Subscription.objects.get(id=int(order_id))
+            user_subscription = UserSubscription.objects.get(user=request.user)
+            user_subscription.subscription = subscription
+            user_subscription.date_joined = timezone.now()
+            user_subscription.save()
+
+            UserOrder.objects.create(
+                    user = request.user,
+                    track_id = request.GET["track_id"],
+                    order = subscription,
+                    )
+            double_pay.delete()
+
+            subscription_expire.apply_async(
+                (user_subscription.id,),
+                eta=user_subscription.date_expires
+                )
+
+            return response.Response("thanks for your purchase")
+        return response.Response("purchase failed")

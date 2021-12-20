@@ -4,7 +4,8 @@ from .views import (
     RegisterView,
     LoginView,
     ProfileView,
-    SubscriptionView
+    SubscriptionView,
+    SubscriptionOrderView
     )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path("login/",LoginView.as_view(),name="login"),
     path("profile/",ProfileView.as_view(),name="profile"),
     path("subscriptions/",SubscriptionView.as_view(),name="subscriptions"),
+    path("subscription/buy/",SubscriptionOrderView.as_view(),name="subscription_buy"),
 ]
