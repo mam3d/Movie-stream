@@ -1,4 +1,5 @@
 import random
+from django.http import Http404
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework import (
@@ -102,7 +103,6 @@ class SubscriptionView(generics.ListAPIView):
 
 class SubscriptionOrderView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [authentication.BasicAuthentication]
 
     def post(self, request):
         serializer = SubscriptionOrderSerializer(data=request.data, context={'request': request})
@@ -118,11 +118,13 @@ class SubscriptionOrderView(views.APIView):
 
     def get(self,request):
         double_pay = get_object_or_404(DoublePay, user=request.user)
-        idpay_id = request.GET["id"]
+        idpay_id = request.GET.get("id")
+        if idpay_id is None:
+            raise Http404
 
-        if int(request.GET["status"]) == 10 and double_pay.idpay_id == idpay_id:
+        if int(request.GET.get("status")) == 10 and double_pay.idpay_id == idpay_id:
 
-            order_id = request.GET["order_id"]
+            order_id = request.get("order_id")
             subscription = Subscription.objects.get(id=int(order_id))
             user_subscription = UserSubscription.objects.get(user=request.user)
             user_subscription.subscription = subscription
@@ -131,7 +133,7 @@ class SubscriptionOrderView(views.APIView):
 
             UserOrder.objects.create(
                     user = request.user,
-                    track_id = request.GET["track_id"],
+                    track_id = request.GET.get("track_id"),
                     order = subscription,
                     )
             double_pay.delete()
