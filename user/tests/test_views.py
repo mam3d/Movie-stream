@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import (
         PhoneVerify,
@@ -8,7 +8,8 @@ from ..models import (
         )
 
 
-class PhoneVerifyCreateTest(TestCase):
+
+class PhoneVerifyCreateTest(APITestCase):
     def setUp(self):
         self.url = reverse("validate_phone")
 
@@ -16,15 +17,15 @@ class PhoneVerifyCreateTest(TestCase):
         data = {
             "phone":"09026673395"
         }
-        response = self.client.post(self.url,data=data)
-        self.assertEqual(response.status_code,201)
+        response = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(response.status_code, 201)
 
     def test_not_create(self):
         data = {
             "phone":"09026asfa673395"
         }
-        response = self.client.post(self.url,data=data)
-        self.assertEqual(response.status_code,400)
+        response = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(response.status_code, 400)
 
     def test_phone_queryset_exists(self):
         PhoneVerify.objects.create(
@@ -35,13 +36,13 @@ class PhoneVerifyCreateTest(TestCase):
         data = {
             "phone":"09036673395"
         }
-        response = self.client.post(self.url,data=data)
+        response = self.client.post(self.url, data=data, format="json")
         phone = PhoneVerify.objects.get(phone="09036673395")
         self.assertEqual(phone.count,2)
         self.assertEqual(response.status_code,201)
 
 
-class UserRegisterViewTest(TestCase):
+class UserRegisterViewTest(APITestCase):
     def setUp(self):
         self.url = reverse("register")
         self.phone = PhoneVerify.objects.create(
@@ -56,8 +57,8 @@ class UserRegisterViewTest(TestCase):
             "password2":"imtestingit",
             "code":123456.
         }
-        response = self.client.post(self.url,data=data)
-        self.assertEqual(response.status_code,201)
+        response = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(response.status_code, 201)
 
     def test_not_create(self):
         data = {
@@ -66,10 +67,10 @@ class UserRegisterViewTest(TestCase):
             "password2":"oafasflkafsf",
             "code":00000,
         }
-        response = self.client.post(self.url,data=data)
-        self.assertEqual(response.status_code,400)
+        response = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(response.status_code, 400)
 
-class ProfileViewTest(TestCase):
+class ProfileViewTest(APITestCase):
     def setUp(self):
         self.url = reverse("profile")
         user = CustomUser.objects.create_user(
@@ -79,15 +80,16 @@ class ProfileViewTest(TestCase):
         self.refresh = RefreshToken.for_user(user)
 
     def test_authenticated(self):
-        response = self.client.get(self.url,HTTP_AUTHORIZATION=f"Bearer {self.refresh.access_token}")
-        self.assertEqual(response.status_code,200)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.refresh.access_token}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
 
     def test_unauthenticated(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code,401)
+        self.assertEqual(response.status_code, 401)
 
 
-class SubscriptionViewTest(TestCase):
+class SubscriptionViewTest(APITestCase):
     def setUp(self):
         self.url = reverse("subscriptions")
         self.subscription = Subscription.objects.create(
@@ -98,6 +100,6 @@ class SubscriptionViewTest(TestCase):
 
     def test_view(self):
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code,200)
-        self.assertEqual(response.json()[0]["name"],"pro")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["name"], "pro")
 
