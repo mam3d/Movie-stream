@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.cache import cache
 from user.api.serializers import (
             PhoneVerifySerializer,
             UserRegisterSerializer,
@@ -6,8 +7,6 @@ from user.api.serializers import (
             )
 from ..models import (
             CustomUser,
-            PhoneVerify,
-            Subscription
             )
 
 
@@ -37,25 +36,10 @@ class PhoneVerifySerializerTest(TestCase):
         serializer = PhoneVerifySerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
-    def test_not_valid_phone_verify_limit(self):
-        PhoneVerify.objects.create(
-            phone = "09026673395",
-            code = 1213913,
-            count = 8
-        )
-        data = {
-            "phone":"09026673395"
-        }
-        serializer = PhoneVerifySerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-
 
 class UserRegisterSerializerTest(TestCase):
     def setUp(self):
-        PhoneVerify.objects.create(
-            phone = "09026673395",
-            code = 123456,
-            )
+        cache.set("09026673395", 123456)
 
     def test_is_valid(self):
         data = {

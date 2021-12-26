@@ -1,8 +1,8 @@
 from django.urls import reverse
+from django.core.cache import cache
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import (
-        PhoneVerify,
         CustomUser,
         Subscription
         )
@@ -18,7 +18,8 @@ class PhoneVerifyCreateTest(APITestCase):
             "phone":"09026673395"
         }
         response = self.client.post(self.url, data=data, format="json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(cache.get("09026673395"))
 
     def test_not_create(self):
         data = {
@@ -26,30 +27,14 @@ class PhoneVerifyCreateTest(APITestCase):
         }
         response = self.client.post(self.url, data=data, format="json")
         self.assertEqual(response.status_code, 400)
-
-    def test_phone_queryset_exists(self):
-        PhoneVerify.objects.create(
-            phone = "09036673395",
-            code = 45656,
-            count = 1
-            )
-        data = {
-            "phone":"09036673395"
-        }
-        response = self.client.post(self.url, data=data, format="json")
-        phone = PhoneVerify.objects.get(phone="09036673395")
-        self.assertEqual(phone.count,2)
-        self.assertEqual(response.status_code,201)
+        self.assertFalse(cache.get("09026asfa673395"))
 
 
 class UserRegisterViewTest(APITestCase):
     def setUp(self):
         self.url = reverse("register")
-        self.phone = PhoneVerify.objects.create(
-                        phone = "09026673395",
-                        code = 123456,
-                        )
-
+        cache.set("09026673395", 123456)
+        
     def test_create(self):
         data = {
             "phone":"09026673395",

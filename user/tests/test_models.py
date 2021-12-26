@@ -1,7 +1,6 @@
 from django.test import TestCase
 from ..models import (
             CustomUser,
-            PhoneVerify,
             Subscription,
             )
 
@@ -24,21 +23,6 @@ class CustomUserTest(TestCase):
         user.name = "mam3d"
         user.save()
         self.assertEqual(str(user),"mam3d")
-
-class PhoneVerifyTest(TestCase):
-    def setUp(self):
-        self.phone_verify = PhoneVerify.objects.create(
-            phone = "09026673395",
-            code = 12345,
-            count = 1
-            )
-
-    def test_phone_verify_created(self):
-        self.assertEqual(self.phone_verify.phone,"09026673395")
-        self.assertEqual(self.phone_verify.code,12345)
-        self.assertEqual(self.phone_verify.count,1)
-        self.assertEqual(str(self.phone_verify),"09026673395")
-
 class SubscriptionTest(TestCase):
     def setUp(self):
         self.subscription = Subscription.objects.create(

@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
         CustomUser,
-        PhoneVerify,
         Subscription,
         UserSubscription,
         UserOrder
@@ -28,11 +27,6 @@ class CustomUserAdmin(UserAdmin):
             ),
         }),
     )
-
-@admin.register(PhoneVerify)
-class PhoneVerifyAdmin(admin.ModelAdmin):
-    list_display = ["phone","code","count"]
-
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):

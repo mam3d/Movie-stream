@@ -1,14 +1,13 @@
 import random
 from django.http import Http404
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from django.core.cache import cache
 from rest_framework import (
         generics,
         status,
         permissions,
         views,
         response,
-        authentication
         )
 from user.tasks import subscription_expire
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -22,40 +21,26 @@ from .serializers import (
             )
 from ..models import (
     CustomUser,
-    PhoneVerify,
     Subscription,
     UserSubscription,
     UserOrder,
-    DoublePay
     )
 from ..helpers import (
     send_smscode,
     pay_with_idpay
     )
 
-class PhoneVerifyCreate(generics.CreateAPIView):
-    serializer_class = PhoneVerifySerializer
+class PhoneVerifyCreate(views.APIView):
+    def post(self,request):
+        serializer = PhoneVerifySerializer(data=request.data)
+        if serializer.is_valid():
+            phone = serializer.validated_data.get("phone")
+            code = random.randint(9999,99999)
+            cache.set(phone, code, timeout=60 * 5)
+            send_smscode(code, phone)
+            return response.Response(f"code has been sent to {phone}")
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def create(self,request,*args, **kwargs):
-        super().create(request,*args, **kwargs)
-        return response.Response(
-            {"success":"code has been sent to your phone"},
-            status=status.HTTP_201_CREATED
-            )
-
-    def perform_create(self, serializer):
-        phone = serializer.validated_data.get("phone")
-        code = random.randint(9999,99999)
-        phone_queryset = PhoneVerify.objects.filter(phone=phone)
-        if phone_queryset.exists():
-            phone_verify = phone_queryset[0]
-            phone_verify.code = code
-            phone_verify.count += 1
-            phone_verify.save()
-            # send_smscode(code,phone)
-        else:      
-            serializer.save(code=code)
-            # send_smscode(code,phone)
 
 class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
@@ -111,20 +96,21 @@ class SubscriptionOrderView(views.APIView):
             user = serializer.validated_data["user"]
             result = pay_with_idpay(subscription_id, user)
 
-            double_pay = DoublePay.objects.create(user=request.user, idpay_id=result["id"])
+            cache.set(f"{user.phone}_idpay", result["id"], timeout=60 * 5)
 
             return response.Response(result["link"])
         return response.Response(serializer.errors)
 
-    def get(self,request):
-        double_pay = get_object_or_404(DoublePay, user=request.user)
+    def get(self, request):
+        idpay_id_in_cache = cache.get(f"{request.user.phone}_idpay")
+
         idpay_id = request.GET.get("id")
         if idpay_id is None:
             raise Http404
 
-        if int(request.GET.get("status")) == 10 and double_pay.idpay_id == idpay_id:
+        if int(request.GET.get("status")) == 10 and idpay_id_in_cache == idpay_id:
 
-            order_id = request.get("order_id")
+            order_id = request.GET.get("order_id")
             subscription = Subscription.objects.get(id=int(order_id))
             user_subscription = UserSubscription.objects.get(user=request.user)
             user_subscription.subscription = subscription
@@ -136,7 +122,8 @@ class SubscriptionOrderView(views.APIView):
                     track_id = request.GET.get("track_id"),
                     order = subscription,
                     )
-            double_pay.delete()
+
+            cache.delete(f"{request.user.phone}_idpay")
 
             subscription_expire.apply_async(
                 (user_subscription.id,),

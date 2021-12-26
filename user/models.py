@@ -40,19 +40,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
             return self.name
         return self.phone
 
-
-class PhoneVerify(models.Model):
-    phone = models.CharField(max_length=11)
-    code = models.IntegerField()
-    count = models.IntegerField(default=1)
-
-    def __str__(self):
-        return self.phone
-
-    class Meta:
-        verbose_name_plural = "phone verifies"
-
-
+        
 class Subscription(models.Model):
     choice = (
         ("F","free"),
@@ -94,10 +82,3 @@ class UserOrder(models.Model):
     def __str__(self):
         return f"{self.user}'s order"
 
-
-class DoublePay(models.Model):
-    user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    idpay_id = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.user

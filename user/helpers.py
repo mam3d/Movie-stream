@@ -4,7 +4,7 @@ import requests
 from .models import Subscription
 
 def send_smscode(code,phone):
-    apikey = config("apikey")
+    apikey = config("apikey", cast=str)
     header = {
         'apikey': apikey,
     }
@@ -13,7 +13,7 @@ def send_smscode(code,phone):
         "receptor": phone,
         "linenumber":"10008566"
     }
-    response = requests.post("https://api.ghasedak.me/v2/sms/send/simple",data=data,headers=header)
+    response = requests.post("https://api.ghasedak.me/v2/sms/send/simple", data=data, headers=header)
 
 
 def pay_with_idpay(order_id,user):
